@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭书架图书管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .toolbar {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 4px solid #667eea;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .book-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .book-author {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .book-info {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .book-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #495057;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .book-actions .btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 25px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        .notification.info {
+            background: #17a2b8;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .book-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 家庭书架图书管理系统</h1>
+            <p>轻松管理您的家庭藏书</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalBooks">0</div>
+                <div class="stat-label">总藏书量</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="totalCategories">0</div>
+                <div class="stat-label">分类数量</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="readBooks">0</div>
+                <div class="stat-label">已阅读</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="unreadBooks">0</div>
+                <div class="stat-label">未阅读</div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button class="btn btn-primary" onclick="openAddModal()">
+                ➕ 添加图书
+            </button>
+            <button class="btn btn-secondary" onclick="exportData()">
+                📤 导出数据
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                📥 导入数据
+            </button>
+            <input type="file" id="importFile" style="display: none;" accept=".json" onchange="importData(event)">
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 搜索书名、作者..." oninput="searchBooks()">
+            </div>
+            
+            <select class="filter-select" id="categoryFilter" onchange="filterBooks()">
+                <option value="">全部分类</option>
+            </select>
+            
+            <select class="filter-select" id="statusFilter" onchange="filterBooks()">
+                <option value="">全部状态</option>
+                <option value="未读">未读</option>
+                <option value="阅读中">阅读中</option>
+                <option value="已读">已读</option>
+            </select>
+        </div>
+
+        <div class="book-grid" id="bookGrid">
+            <!-- 图书卡片将在这里动态生成 -->
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">📖</div>
+            <h3>书架还是空的</h3>
+            <p>点击"添加图书"按钮开始管理您的藏书吧！</p>
+        </div>
+    </div>
+
+    <!-- 添加/编辑图书模态框 -->
+    <div class="modal-overlay" id="bookModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">添加图书</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bookForm">
+                    <input type="hidden" id="bookId">
+                    
+                    <div class="form-group">
+                        <label for="title">书名 *</label>
+                        <input type="text" id="title" required placeholder="请输入书名">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="author">作者 *</label>
+                            <input type="text" id="author" required placeholder="请输入作者">
+                        </div>
+                        <div class="form-group">
+                            <label for="publisher">出版社</label>
+                            <input type="text" id="publisher" placeholder="请输入出版社">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="publishYear">出版年份</label>
+                            <input type="number" id="publishYear" placeholder="YYYY" min="1000" max="2099">
+                        </div>
+                        <div class="form-group">
+                            <label for="isbn">ISBN</label>
+                            <input type="text" id="isbn" placeholder="请输入ISBN号">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">分类</label>
+                            <input type="text" id="category" list="categoryList" placeholder="选择或输入分类">
+                            <datalist id="categoryList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">阅读状态</label>
+                            <select id="status">
+                                <option value="未读">未读</option>
+                                <option value="阅读中">阅读中</option>
+                                <option value="已读">已读</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">书架位置</label>
+                            <input type="text" id="location" placeholder="例如：A区-第2层">
+                        </div>
+                        <div class="form-group">
+                            <label for="price">价格</label>
+                            <input type="number" id="price" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tags">标签</label>
+                        <input type="text" id="tags" placeholder="用逗号分隔多个标签">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">备注</label>
+                        <textarea id="notes" placeholder="添加备注信息..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveBook()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储
+        let books = [];
+        let categories = new Set();
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBooks();
+            renderBooks();
+            updateStats();
+            updateCategoryFilter();
+        });
+
+        // 加载图书数据
+        function loadBooks() {
+            const saved = localStorage.getItem('familyLibrary');
+            if (saved) {
+                books = JSON.parse(saved);
+                books.forEach(book => {
+                    if (book.category) categories.add(book.category);
+                });
+            }
+        }
+
+        // 保存图书数据
+        function saveBooks() {
+            localStorage.setItem('familyLibrary', JSON.stringify(books));
+            updateStats();
+            updateCategoryFilter();
+        }
+
+        // 渲染图书列表
+        function renderBooks(filteredBooks = null) {
+            const grid = document.getElementById('bookGrid');
+            const emptyState = document.getElementById('emptyState');
+            const booksToRender = filteredBooks || books;
+
+            if (booksToRender.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            grid.innerHTML = booksToRender.map(book => `
+                <div class="book-card" style="border-left-color: ${getStatusColor(book.status)}">
+                    <div class="book-title">${escapeHtml(book.title)}</div>
+                    <div class="book-author">✍️ ${escapeHtml(book.author)}</div>
+                    ${book.publisher ? `<div class="book-info">📖 ${escapeHtml(book.publisher)}</div>` : ''}
+                    ${book.publishYear ? `<div class="book-info">📅 ${book.publishYear}年</div>` : ''}
+                    ${book.isbn ? `<div class="book-info">ISBN: ${escapeHtml(book.isbn)}</div>` : ''}
+                    ${book.category ? `<div class="book-info">📂 ${escapeHtml(book.category)}</div>` : ''}
+                    ${book.location ? `<div class="book-info">📍 ${escapeHtml(book.location)}</div>` : ''}
+                    <div class="book-info">状态：<strong style="color: ${getStatusColor(book.status)}">${book.status || '未读'}</strong></div>
+                    ${book.tags && book.tags.length > 0 ? `
+                        <div class="book-tags">
+                            ${book.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="book-actions">
+                        <button class="btn btn-primary" onclick="editBook(${book.id})">编辑</button>
+                        <button class="btn btn-success" onclick="toggleStatus(${book.id})">标记</button>
+                        <button class="btn btn-danger" onclick="deleteBook(${book.id})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 获取状态颜色
+        function getStatusColor(status) {
+            switch(status) {
+                case '已读': return '#28a745';
+                case '阅读中': return '#ffc107';
+                default: return '#667eea';
+            }
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalBooks').textContent = books.length;
+            document.getElementById('totalCategories').textContent = categories.size;
+            document.getElementById('readBooks').textContent = books.filter(b => b.status === '已读').length;
+            document.getElementById('unreadBooks').textContent = books.filter(b => b.status !== '已读').length;
+        }
+
+        // 更新分类筛选器
+        function updateCategoryFilter() {
+            const filter = document.getElementById('categoryFilter');
+            const datalist = document.getElementById('categoryList');
+            
+            const categoryArray = Array.from(categories).sort();
+            
+            filter.innerHTML = '<option value="">全部分类</option>' + 
+                categoryArray.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('');
+            
+            datalist.innerHTML = categoryArray.map(cat => `<option value="${escapeHtml(cat)}">`).join('');
+        }
+
+        // 打开添加模态框
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '添加图书';
+            document.getElementById('bookForm').reset();
+            document.getElementById('bookId').value = '';
+            document.getElementById('bookModal').classList.add('active');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('bookModal').classList.remove('active');
+        }
+
+        // 编辑图书
+        function editBook(id) {
+            const book = books.find(b => b.id === id);
+            if (!book) return;
+
+            document.getElementById('modalTitle').textContent = '编辑图书';
+            document.getElementById('bookId').value = book.id;
+            document.getElementById('title').value = book.title;
+            document.getElementById('author').value = book.author;
+            document.getElementById('publisher').value = book.publisher || '';
+            document.getElementById('publishYear').value = book.publishYear || '';
+            document.getElementById('isbn').value = book.isbn || '';
+            document.getElementById('category').value = book.category || '';
+            document.getElementById('status').value = book.status || '未读';
+            document.getElementById('location').value = book.location || '';
+            document.getElementById('price').value = book.price || '';
+            document.getElementById('tags').value = book.tags ? book.tags.join(', ') : '';
+            document.getElementById('notes').value = book.notes || '';
+            
+            document.getElementById('bookModal').classList.add('active');
+        }
+
+        // 保存图书
+        function saveBook() {
+            const id = document.getElementById('bookId').value;
+            const title = document.getElementById('title').value.trim();
+            const author = document.getElementById('author').value.trim();
+            
+            if (!title || !author) {
+                showNotification('书名和作者为必填项', 'error');
+                return;
+            }
+
+            const tagsInput = document.getElementById('tags').value.trim();
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t) : [];
+
+            const bookData = {
+                title,
+                author,
+                publisher: document.getElementById('publisher').value.trim(),
+                publishYear: document.getElementById('publishYear').value,
+                isbn: document.getElementById('isbn').value.trim(),
+                category: document.getElementById('category').value.trim(),
+                status: document.getElementById('status').value,
+                location: document.getElementById('location').value.trim(),
+                price: document.getElementById('price').value,
+                tags,
+                notes: document.getElementById('notes').value.trim()
+            };
+
+            if (id) {
+                // 编辑现有图书
+                const index = books.findIndex(b => b.id == id);
+                if (index !== -1) {
+                    books[index] = { ...books[index], ...bookData };
+                    showNotification('图书信息已更新', 'success');
+                }
+            } else {
+                // 添加新图书
+                bookData.id = Date.now();
+                bookData.addDate = new Date().toISOString();
+                books.unshift(bookData);
+                showNotification('图书添加成功', 'success');
+            }
+
+            if (bookData.category) {
+                categories.add(bookData.category);
+            }
+
+            saveBooks();
+            renderBooks();
+            closeModal();
+        }
+
+        // 删除图书
+        function deleteBook(id) {
+            if (!confirm('确定要删除这本书吗？')) return;
+            
+            books = books.filter(b => b.id !== id);
+            saveBooks();
+            renderBooks();
+            showNotification('图书已删除', 'info');
+        }
+
+        // 切换阅读状态
+        function toggleStatus(id) {
+            const book = books.find(b => b.id === id);
+            if (!book) return;
+
+            const statusOrder = ['未读', '阅读中', '已读'];
+            const currentIndex = statusOrder.indexOf(book.status || '未读');
+            book.status = statusOrder[(currentIndex + 1) % statusOrder.length];
+            
+            saveBooks();
+            renderBooks();
+            showNotification(`状态已更新为：${book.status}`, 'success');
+        }
+
+        // 搜索图书
+        function searchBooks() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            filterAndRender(query);
+        }
+
+        // 筛选图书
+        function filterBooks() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            filterAndRender(query);
+        }
+
+        // 筛选并渲染
+        function filterAndRender(query) {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filtered = books;
+
+            if (query) {
+                filtered = filtered.filter(book => 
+                    book.title.toLowerCase().includes(query) ||
+                    book.author.toLowerCase().includes(query) ||
+                    (book.publisher && book.publisher.toLowerCase().includes(query)) ||
+                    (book.tags && book.tags.some(tag => tag.toLowerCase().includes(query)))
+                );
+            }
+
+            if (categoryFilter) {
+                filtered = filtered.filter(book => book.category === categoryFilter);
+            }
+
+            if (statusFilter) {
+                filtered = filtered.filter(book => book.status === statusFilter);
+            }
+
+            renderBooks(filtered);
+        }
+
+        // 导出数据
+        function exportData() {
+            const dataStr = JSON.stringify(books, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `家庭图书馆_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('数据导出成功', 'success');
+        }
+
+        // 导入数据
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (!Array.isArray(imported)) {
+                        throw new Error('无效的数据格式');
+                    }
+                    
+                    // 合并数据，避免重复
+                    const existingIds = new Set(books.map(b => b.id));
+                    let addedCount = 0;
+                    
+                    imported.forEach(book => {
+                        if (!existingIds.has(book.id)) {
+                            books.push(book);
+                            if (book.category) categories.add(book.category);
+                            addedCount++;
+                        }
+                    });
+                    
+                    saveBooks();
+                    renderBooks();
+                    showNotification(`成功导入 ${addedCount} 本图书`, 'success');
+                } catch (err) {
+                    showNotification('导入失败：' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // 显示通知
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('bookModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
